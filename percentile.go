@@ -18,8 +18,8 @@ func (h histogram) Less(i, j int) bool {
 	return h[i].time < h[j].time
 }
 
-// Sum the total entries in the histogram
-func qrtentries(h []bucket) int {
+// Implement count
+func (h histogram) Count() int {
 	total := 0
 
 	for _, v := range h {
@@ -29,14 +29,14 @@ func qrtentries(h []bucket) int {
 	return total
 }
 
-func percentile(h []bucket, p int) float64 {
+func percentile(h histogram, p int) float64 {
 	var p_ix float64
 	var cur_pctl float64
 	var total int
 	var pctl float64
 
 	// Find the total number of entries in histogram
-	total = qrtentries(h)
+	total = h.Count()
 
 	fmt.Printf("total: %v\n", total)
 
@@ -164,5 +164,5 @@ func main() {
 	fmt.Printf("orig: %v\n", hist)
 	sort.Sort(histogram(hist))
 	fmt.Printf("sorted: %v\n", hist)
-	// percentile(hist, 90)
+	percentile(hist, 90)
 }
