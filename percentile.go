@@ -52,23 +52,12 @@ func percentile(h histogram, p float32) float64 {
 		cur_pctl += v.count
 		fmt.Printf("cur_pctl: %v\tp_ix: %v\n", cur_pctl, p_ix)
 		if float64(cur_pctl) >= p_ix {
-			fmt.Printf("pctl: %v\tvalue: %v\n", p, h[i].time/float64(h[i].count))
+			pctl = h[i].time / float64(h[i].count)
+			fmt.Printf("pctl: %v\tvalue: %v\n", p, pctl)
 			break
 		}
 	}
 
-	/*
-		for i, v := range h {
-			if float64() > p_ix {
-				// Becuase we don't have exact latencies find the average
-				pctl =
-				fmt.Printf("cur_pctl: %v\n pctl: %v\n", cur_pctl, pctl)
-				break
-			}
-		}
-	*/
-
-	pctl = 0
 	return pctl
 }
 
