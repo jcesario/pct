@@ -29,63 +29,53 @@ func (h histogram) Count() int {
 	return total
 }
 
-func percentile(h histogram, p int) float64 {
+func percentile(h histogram, p float32) float64 {
 	var p_ix float64
-	var cur_pctl float64
+	var cur_pctl int
 	var total int
 	var pctl float64
 
 	// Find the total number of entries in histogram
 	total = h.Count()
-
 	fmt.Printf("total: %v\n", total)
 
 	// Multiply the total number of values in the data set by the percentile, which will give you the index.
 	p_ix = (float64(total) * float64(p)) * .01
-
 	fmt.Printf("index: %f\n", p_ix)
 
 	// Order all of the values in the data set in ascending order (least to greatest).
-	var times []float64
-
-	for _, v := range h {
-		times = append(times, v.time)
-	}
-
-	var count []int
-
-	for _, v := range h {
-		count = append(count, v.count)
-	}
-
-	sort.Ints(count)
-	sort.Float64s(times)
-	fmt.Println(times)
+	sort.Sort(histogram(h))
+	fmt.Printf("sorted: %v\n", h)
 
 	// Find the tgt percentile
-	// If p_ix equal to tgt pctl then average current and next value together
-	for i, _ := range h {
-		if float64(i) > p_ix {
-			pctl = times[i-1]
-			fmt.Printf("cur_pctl: %v\n pctl: %v\n", cur_pctl, pctl)
+	for i, v := range h {
+		cur_pctl += v.count
+		fmt.Printf("cur_pctl: %v\tp_ix: %v\n", cur_pctl, p_ix)
+		if float64(cur_pctl) >= p_ix {
+			fmt.Printf("pctl: %v\tvalue: %v\n", p, h[i].time/float64(h[i].count))
 			break
 		}
 	}
 
+	/*
+		for i, v := range h {
+			if float64() > p_ix {
+				// Becuase we don't have exact latencies find the average
+				pctl =
+				fmt.Printf("cur_pctl: %v\n pctl: %v\n", cur_pctl, pctl)
+				break
+			}
+		}
+	*/
+
+	pctl = 0
 	return pctl
 }
 
 func main() {
 	var hist []bucket
 
-	/*
-		    Make connection to mysql
-			  Return histogram
-
-		    75 90 95 99 999 9999
-		    percentile(hist, )
-	*/
-	// p := [5]float32{75, 90, 95, 99, 99.9}
+	pctls := [5]float32{75, 90, 95, 99, 99.9}
 
 	hist = append(hist, bucket{time: 85, count: 1, total: 85})
 	hist = append(hist, bucket{time: 34, count: 1, total: 34})
@@ -148,21 +138,8 @@ func main() {
 		hist = append(hist, row{time: 8388608.000000, count: 0, total: 0.000000})
 	*/
 
-	// sysbench/sysbench --test=sysbench/tests/db/oltp.lua --mysql-user=root prepare
-	// sysbench/sysbench --test=sysbench/tests/db/oltp.lua --mysql-user=root run
-	/*
-		for _, pct := range p {
-			// percentile(hist, p)
-			fmt.Println(pct)
-		}
-
-		for k, v := range hist {
-			fmt.Printf("%v: %+v\n", k, v.count)
-		}
-	*/
-
-	fmt.Printf("orig: %v\n", hist)
-	sort.Sort(histogram(hist))
-	fmt.Printf("sorted: %v\n", hist)
-	percentile(hist, 90)
+	// Get all requested percentiles
+	for _, x := range pctls {
+		percentile(hist, x)
+	}
 }
