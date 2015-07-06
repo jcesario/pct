@@ -52,7 +52,7 @@ func percentile(h histogram, p float32) float64 {
 		cur_pctl += v.count
 		fmt.Printf("cur_pctl: %v\tp_ix: %v\n", cur_pctl, p_ix)
 		if float64(cur_pctl) >= p_ix {
-			pctl = h[i].time / float64(h[i].count)
+			pctl = h[i].total / float64(h[i].count)
 			fmt.Printf("pctl: %v\tvalue: %v\n", p, pctl)
 			break
 		}
