@@ -7,9 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"math"
 	"os"
-	//	"reflect"
 	"strconv"
-	//	"time"
 )
 
 type mysqldata struct {
