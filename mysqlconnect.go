@@ -1,61 +1,55 @@
-package main
+package mysqlconnect 
 
 import (
 	"database/sql"
-	"encoding/binary"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"math"
+	"sort"
 	"os"
-	"strconv"
 )
 
+// mysql struct holds the histogram data itself per histo interval time unit / row / bucket
 type mysqldata struct {
 	time  float64
-	count int
+	count int64
 	total float64
 }
 
-func Float64frombytes(bytes []byte) float64 {
-	bits := binary.LittleEndian.Uint64(bytes)
-	float := math.Float64frombits(bits)
-	return float
-}
+// histogram format of mysqldata struct, row based on bucket
+type MysqlHisto []mysqldata
 
-func Float64bytes(float float64) []byte {
-	bits := math.Float64bits(float)
-	bytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(bytes, bits)
-	return bytes
-}
+// NewMysqlQrtBucket Public way to return a QRT bucket to be appended to a Histogram
+func NewMysqlHisto(time float64, count int64, total float64) MysqlHisto {
+	return MysqlHisto{time, count, total}
 
-func checkErr(err error) {
-	if err != nil {
-		panic(err)
+// Sort for mysql histogram format, in three methods, length, swap, less for Bubble Sort 
+func (m MysqlHisto) Len() int {
+	return len(h)
+}
+func (m MysqlHisto) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
+}
+func (m MysqlHisto) Less(i, j int) bool {
+	return h[i].time < h[j].time
+}
+// Count for MysqlHisto
+func (m MysqlHisto) Count() int64 {
+	var total int64
+	total = 0
+	for _, v := range h {
+		total += v.count
 	}
+	return total
 }
 
-func (f *mysqldata) SetTime(time float64) {
-	f.time = time
-}
-
-func (f *mysqldata) SetCount(count int) {
-	f.count = count
-}
-
-func (f *mysqldata) SetTotal(total float64) {
-	f.total = total
-
-}
-
-func main() {
+func mysqlconnect(uname string, host string, port string) (m MysqlHisto) {
 	var (
 		TIME  float64
-		COUNT int
+		COUNT int64
 		TOTAL float64
 	)
 
-	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/information_schema")
+	db, err := sql.Open("mysql", "uname:@tcp(host:port)/information_schema")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -75,14 +69,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	rowcount := 1
-
-	mysqloutput := make(map[string]mysqldata)
-
 	for rows.Next() {
 		derp := rows.Scan(&TIME, &COUNT, &TOTAL)
 		if derp != nil {
@@ -91,13 +77,10 @@ func main() {
 
 		mysqlarray := mysqldata{time: TIME, count: COUNT, total: TOTAL}
 
-		poop := "ROW " + strconv.Itoa(rowcount)
-
-		mysqloutput[poop] = mysqlarray
+		mysqloutput 
 
 		fmt.Println(mysqloutput)
 
-		rowcount++
 		if err = rows.Err(); err != nil {
 			panic(err.Error()) // proper error handling instead of panic in your app
 		}
